@@ -680,6 +680,46 @@ void renameOrDie(const std::wstring& from, const std::wstring& to)
 }
 
 // ----------------------------------------------------------------------------
+// copyOrDie(): copy file with error handling.
+// ----------------------------------------------------------------------------
+
+void copyOrDie(const string& from, const string& to)
+{
+    char buffer[READ_SIZE_LIMIT];
+    FILE* fromFile = fopenOrDie(from, "rb");
+    const size_t fromFileSize = filesize(fromFile);
+    const string tempTo = to + ".tmp";
+    FILE* tempToFile = fopenOrDie(tempTo, "wb");
+    for (size_t i = 0; i < fromFileSize; i = +READ_SIZE_LIMIT)
+    {
+        const size_t readSize = min<size_t>(fromFileSize - READ_SIZE_LIMIT, READ_SIZE_LIMIT);
+        freadOrDie(static_cast<void*>(buffer), 1, readSize, fromFile);
+        fwriteOrDie(static_cast<void*>(buffer), 1, readSize, tempToFile);
+    }
+    fcloseOrDie(fromFile);
+    fcloseOrDie(tempToFile);
+    renameOrDie(tempTo, to);
+}
+
+void copyOrDie(const wstring& from, const wstring& to)
+{
+    char buffer[READ_SIZE_LIMIT];
+    FILE* fromFile = fopenOrDie(from, L"rb");
+    const size_t fromFileSize = filesize(fromFile);
+    const wstring tempTo = to + L".tmp";
+    FILE* tempToFile = fopenOrDie(tempTo, L"wb");
+    for (size_t i = 0; i < fromFileSize; i = +READ_SIZE_LIMIT)
+    {
+        const size_t readSize = min<size_t>(fromFileSize - READ_SIZE_LIMIT, READ_SIZE_LIMIT);
+        freadOrDie(static_cast<void*>(buffer), 1, readSize, fromFile);
+        fwriteOrDie(static_cast<void*>(buffer), 1, readSize, tempToFile);
+    }
+    fcloseOrDie(fromFile);
+    fcloseOrDie(tempToFile);
+    renameOrDie(tempTo, to);
+}
+
+// ----------------------------------------------------------------------------
 // fputstring(): write a 0-terminated string
 // ----------------------------------------------------------------------------
 
