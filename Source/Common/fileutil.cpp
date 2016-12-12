@@ -690,11 +690,11 @@ void copyOrDie(const string& from, const string& to)
     const size_t fromFileSize = filesize(fromFile);
     const string tempTo = to + ".tmp";
     FILE* tempToFile = fopenOrDie(tempTo, "wb");
-    for (size_t i = 0; i < fromFileSize; i = +READ_SIZE_LIMIT)
+    for (size_t i = 0; i < fromFileSize; i += READ_SIZE_LIMIT)
     {
-        const size_t readSize = min<size_t>(fromFileSize - READ_SIZE_LIMIT, READ_SIZE_LIMIT);
-        freadOrDie(static_cast<void*>(buffer), 1, readSize, fromFile);
-        fwriteOrDie(static_cast<void*>(buffer), 1, readSize, tempToFile);
+        const size_t readSize = min<size_t>(fromFileSize - i, READ_SIZE_LIMIT);
+        freadOrDie(buffer, 1, readSize, fromFile);
+        fwriteOrDie(buffer, 1, readSize, tempToFile);
     }
     fcloseOrDie(fromFile);
     fcloseOrDie(tempToFile);
@@ -708,11 +708,11 @@ void copyOrDie(const wstring& from, const wstring& to)
     const size_t fromFileSize = filesize(fromFile);
     const wstring tempTo = to + L".tmp";
     FILE* tempToFile = fopenOrDie(tempTo, L"wb");
-    for (size_t i = 0; i < fromFileSize; i = +READ_SIZE_LIMIT)
+    for (size_t i = 0; i < fromFileSize; i += READ_SIZE_LIMIT)
     {
-        const size_t readSize = min<size_t>(fromFileSize - READ_SIZE_LIMIT, READ_SIZE_LIMIT);
-        freadOrDie(static_cast<void*>(buffer), 1, readSize, fromFile);
-        fwriteOrDie(static_cast<void*>(buffer), 1, readSize, tempToFile);
+        const size_t readSize = min<size_t>(fromFileSize - i, READ_SIZE_LIMIT);
+        freadOrDie(buffer, 1, readSize, fromFile);
+        fwriteOrDie(buffer, 1, readSize, tempToFile);
     }
     fcloseOrDie(fromFile);
     fcloseOrDie(tempToFile);

@@ -176,7 +176,7 @@ static void CopyBestEpochs(
             stderr,
             "Best epoch for criterion '%ls' is %d and model %ls copied to %ls\n",
             bestEpoch.first.c_str(),
-            bestEpoch.second.EpochIndex,
+            bestEpoch.second.EpochIndex + 1, // In actual loop epochs are 0 indexed but all outputs use 1 indexed.
             modelEpochName.c_str(),
             modelMeasurementName.c_str());
     }
@@ -407,13 +407,13 @@ void SGD<ElemType>::TrainOrAdaptModel(int startEpoch, ComputationNetworkPtr net,
     }
 
     map<wstring, BestEpoch> criteriaBestEpoch;
-    if (criterionNodes.size() > 0)
+    if (!criterionNodes.empty())
     {
         criteriaBestEpoch.emplace(make_pair(criterionNodes[0]->NodeName(), BestEpoch()));
     }
-    for (let node : evaluationNodes)
+    for (const ComputationNodeBasePtr& node : evaluationNodes)
     {
-        criteriaBestEpoch.emplace(make_pair(node->NodeName(), BestEpoch()));
+        criteriaBestEpoch.emplace(node->NodeName(), BestEpoch());
     }
 
     size_t totalTrainingSamplesSeen = 0; // aggregated over all epochs, for logging purposes only
@@ -2538,7 +2538,7 @@ void SGD<ElemType>::LoadCheckPointInfo(const size_t epochNumber,
     {
         int32_t criteriaSize = 0;
         fstream >> criteriaSize;
-        // Sanity check: criteria size in checkpoint must be the same as preallocated one we shell fill in.
+        // Sanity check: criteria size in checkpoint must be the same as preallocated one we shall fill in.
         if (criteriaSize != static_cast<int32_t>(criteriaBestEpoch.size()))
         {
             RuntimeError(
