@@ -685,24 +685,18 @@ void renameOrDie(const std::wstring& from, const std::wstring& to)
 
 void copyOrDie(const string& from, const string& to)
 {
-    char buffer[READ_SIZE_LIMIT];
-    FILE* fromFile = fopenOrDie(from, "rb");
-    const size_t fromFileSize = filesize(fromFile);
-    const string tempTo = to + ".tmp";
-    FILE* tempToFile = fopenOrDie(tempTo, "wb");
-    for (size_t i = 0; i < fromFileSize; i += READ_SIZE_LIMIT)
-    {
-        const size_t readSize = min<size_t>(fromFileSize - i, READ_SIZE_LIMIT);
-        freadOrDie(buffer, 1, readSize, fromFile);
-        fwriteOrDie(buffer, 1, readSize, tempToFile);
-    }
-    fcloseOrDie(fromFile);
-    fcloseOrDie(tempToFile);
-    renameOrDie(tempTo, to);
+    // Call wide string implementation.
+    copyOrDie(s2ws(from), s2ws(to));
 }
 
 void copyOrDie(const wstring& from, const wstring& to)
 {
+#ifdef _WIN32
+    const wstring tempTo = to + L".tmp";
+    const BOOL succeeded = CopyFile(from.c_str(), tempTo.c_str(), FALSE);
+    if (!succeeded)
+        RuntimeError("error copying file '%ls' to '%ls': %d", from.c_str(), tempTo.c_str(), GetLastError());
+#else
     char buffer[READ_SIZE_LIMIT];
     FILE* fromFile = fopenOrDie(from, L"rb");
     const size_t fromFileSize = filesize(fromFile);
@@ -716,6 +710,7 @@ void copyOrDie(const wstring& from, const wstring& to)
     }
     fcloseOrDie(fromFile);
     fcloseOrDie(tempToFile);
+#endif
     renameOrDie(tempTo, to);
 }
 

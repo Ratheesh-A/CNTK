@@ -138,8 +138,8 @@ static double MomentumPerMB(double momentumPerSample, size_t minibatchSize);
 
 struct BestEpoch
 {
-    double CriterionMinValue = numeric_limits<double>::max();
-    int32_t EpochIndex = -1;
+    double criterionMinValue = numeric_limits<double>::max();
+    int32_t epochIndex = -1;
 };
 
 // Loops through criteria (i.e. score) and updates the best one if smaller value is found.
@@ -152,10 +152,10 @@ static void UpdateBestEpochs(
     for (size_t i = 0; i < vScore.size(); ++i)
     {
         BestEpoch& nodeBestEpoch = criteriaBestEpoch.at(cvSetTrainAndEvalNodes[i]);
-        if (vScore[i].Average() < nodeBestEpoch.CriterionMinValue)
+        if (vScore[i].Average() < nodeBestEpoch.criterionMinValue)
         {
-            nodeBestEpoch.CriterionMinValue = vScore[i].Average();
-            nodeBestEpoch.EpochIndex = epoch;
+            nodeBestEpoch.criterionMinValue = vScore[i].Average();
+            nodeBestEpoch.epochIndex = epoch;
         }
     }
 }
@@ -169,16 +169,16 @@ static void CopyBestEpochs(
 
     for (const auto& bestEpoch : criteriaBestEpoch)
     {
-        const wstring modelMeasurementName = modelBaseName + L"_" + bestEpoch.first;
-        const wstring modelEpochName = sgd.GetModelNameForEpoch(bestEpoch.second.EpochIndex);
-        copyOrDie(modelEpochName, modelMeasurementName);
-        fprintf(
+        const wstring modelCriterionName = modelBaseName + L"_" + bestEpoch.first;
+        const wstring modelEpochName = sgd.GetModelNameForEpoch(bestEpoch.second.epochIndex);
+        copyOrDie(modelEpochName, modelCriterionName);
+        LOGPRINTF(
             stderr,
             "Best epoch for criterion '%ls' is %d and model %ls copied to %ls\n",
             bestEpoch.first.c_str(),
-            bestEpoch.second.EpochIndex + 1, // In actual loop epochs are 0 indexed but all outputs use 1 indexed.
+            bestEpoch.second.epochIndex + 1, // In actual loop epochs are 0 indexed but all outputs use 1 indexed.
             modelEpochName.c_str(),
-            modelMeasurementName.c_str());
+            modelCriterionName.c_str());
     }
 }
 
@@ -675,6 +675,7 @@ void SGD<ElemType>::TrainOrAdaptModel(int startEpoch, ComputationNetworkPtr net,
                 //fprintf(stderr, "%s %ls = %.8f * %d", k ? ";" : "", cvSetTrainAndEvalNodes[k].c_str(), vScore[k].Average(), (int)vScore[k].second);
             fprintf(stderr, "\n");
 
+            // Loops through criteria (i.e. score) and updates the best one if smaller value is found.
             UpdateBestEpochs(vScore, cvSetTrainAndEvalNodes, i, criteriaBestEpoch);
 
             if (m_useCVSetControlLRIfCVExists)
@@ -880,6 +881,7 @@ void SGD<ElemType>::TrainOrAdaptModel(int startEpoch, ComputationNetworkPtr net,
 
     if ((m_mpi == nullptr) || m_mpi->IsMainNode())
     {
+        // For each criterion copies the best epoch to the new file with criterion name appended.
         CopyBestEpochs(criteriaBestEpoch, *this, m_maxEpochs - 1);
     }
 
@@ -2431,7 +2433,7 @@ void SGD<ElemType>::SaveCheckPointInfo(const size_t epoch, const size_t totalSam
             fstream << criteriaSize;
             for (const auto& criterion : criteriaBestEpoch)
             {
-                fstream << criterion.second.CriterionMinValue << criterion.second.EpochIndex;
+                fstream << criterion.second.criterionMinValue << criterion.second.epochIndex;
             }
             fstream.PutMarker(FileMarker::fileMarkerEndSection, L"ECriteria");
 
@@ -2547,7 +2549,7 @@ void SGD<ElemType>::LoadCheckPointInfo(const size_t epochNumber,
                 static_cast<int32_t>(criteriaBestEpoch.size()));
         }
         for (auto& criterion : criteriaBestEpoch)
-            fstream >> criterion.second.CriterionMinValue >> criterion.second.EpochIndex;
+            fstream >> criterion.second.criterionMinValue >> criterion.second.epochIndex;
         fstream.GetMarker(FileMarker::fileMarkerBeginSection, L"ECriteria");
     }
 
