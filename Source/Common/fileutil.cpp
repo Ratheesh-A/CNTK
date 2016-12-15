@@ -691,16 +691,16 @@ void copyOrDie(const string& from, const string& to)
 
 void copyOrDie(const wstring& from, const wstring& to)
 {
-#ifdef _WIN32
     const wstring tempTo = to + L".tmp";
+#ifdef _WIN32
     const BOOL succeeded = CopyFile(from.c_str(), tempTo.c_str(), FALSE);
     if (!succeeded)
         RuntimeError("error copying file '%ls' to '%ls': %d", from.c_str(), tempTo.c_str(), GetLastError());
 #else
+#if 0
     char buffer[READ_SIZE_LIMIT];
     FILE* fromFile = fopenOrDie(from, L"rb");
     const size_t fromFileSize = filesize(fromFile);
-    const wstring tempTo = to + L".tmp";
     FILE* tempToFile = fopenOrDie(tempTo, L"wb");
     for (size_t i = 0; i < fromFileSize; i += READ_SIZE_LIMIT)
     {
@@ -708,6 +708,13 @@ void copyOrDie(const wstring& from, const wstring& to)
         freadOrDie(buffer, 1, readSize, fromFile);
         fwriteOrDie(buffer, 1, readSize, tempToFile);
     }
+#endif
+
+    FILE* fromFile = fopenOrDie(from, L"rb");
+    FILE* tempToFile = fopenOrDie(tempTo, L"wb");
+    const size_t fromFileSize = filesize(fromFile);
+    sendfile(fileno(tempToFile), fileno(fromFile), 0, fromFileSize);
+
     fcloseOrDie(fromFile);
     fcloseOrDie(tempToFile);
 #endif
