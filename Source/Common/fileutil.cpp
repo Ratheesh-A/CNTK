@@ -710,7 +710,7 @@ void copyOrDie(const wstring& from, const wstring& to)
     fcloseOrDie(fromFile);
     fcloseOrDie(tempToFile);
 #endif
-    //renameOrDie(tempTo, to);
+    renameOrDie(tempTo, to);
 }
 
 // ----------------------------------------------------------------------------
