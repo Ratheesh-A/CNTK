@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <glob.h>
+#include <sys/sendfile.h>
 #endif
 #include <stdio.h>
 #include <string.h>
