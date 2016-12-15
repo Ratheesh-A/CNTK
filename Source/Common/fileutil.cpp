@@ -699,7 +699,8 @@ void copyOrDie(const wstring& from, const wstring& to)
 #else
     //char buffer[READ_SIZE_LIMIT];
     FILE* fromFile = fopenOrDie(from, L"rb");
-    //const size_t fromFileSize = filesize(fromFile);
+    const size_t fromFileSize = filesize(fromFile);
+    fromFileSize;
     //FILE* tempToFile = fopenOrDie(tempTo, L"wb");
     //for (size_t i = 0; i < fromFileSize; i += READ_SIZE_LIMIT)
     //{
