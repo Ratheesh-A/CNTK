@@ -697,14 +697,14 @@ void copyOrDie(const wstring& from, const wstring& to)
     if (!succeeded)
         RuntimeError("error copying file '%ls' to '%ls': %d", from.c_str(), tempTo.c_str(), GetLastError());
 #else
-    //char buffer[READ_SIZE_LIMIT];
+    char buffer[READ_SIZE_LIMIT];
     FILE* fromFile = fopenOrDie(from, L"rb");
     const size_t fromFileSize = filesize(fromFile);
     FILE* tempToFile = fopenOrDie(tempTo, L"wb");
     for (size_t i = 0; i < fromFileSize; i += READ_SIZE_LIMIT)
     {
-    //    const size_t readSize = min<size_t>(fromFileSize - i, READ_SIZE_LIMIT);
-    //    freadOrDie(buffer, 1, readSize, fromFile);
+        const size_t readSize = min<size_t>(fromFileSize - i, READ_SIZE_LIMIT);
+        freadOrDie(buffer, 1, readSize, fromFile);
     //    fwriteOrDie(buffer, 1, readSize, tempToFile);
     }
     fcloseOrDie(fromFile);
