@@ -700,16 +700,15 @@ void copyOrDie(const wstring& from, const wstring& to)
     //char buffer[READ_SIZE_LIMIT];
     FILE* fromFile = fopenOrDie(from, L"rb");
     const size_t fromFileSize = filesize(fromFile);
-    fromFileSize;
-    //FILE* tempToFile = fopenOrDie(tempTo, L"wb");
-    //for (size_t i = 0; i < fromFileSize; i += READ_SIZE_LIMIT)
-    //{
+    FILE* tempToFile = fopenOrDie(tempTo, L"wb");
+    for (size_t i = 0; i < fromFileSize; i += READ_SIZE_LIMIT)
+    {
     //    const size_t readSize = min<size_t>(fromFileSize - i, READ_SIZE_LIMIT);
     //    freadOrDie(buffer, 1, readSize, fromFile);
     //    fwriteOrDie(buffer, 1, readSize, tempToFile);
-    //}
+    }
     fcloseOrDie(fromFile);
-    //fcloseOrDie(tempToFile);
+    fcloseOrDie(tempToFile);
 #endif
     //renameOrDie(tempTo, to);
 }
