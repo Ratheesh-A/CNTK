@@ -352,6 +352,30 @@ inline CNTK::ValuePtr GenerateSequences(const std::vector<size_t>& sequenceLengt
     }
 }
 
+template <typename ElementType>
+inline std::pair<CNTK::NDArrayViewPtr, CNTK::NDArrayViewPtr> GenerateSparseSequence(size_t vocabSize, size_t sequenceLength, size_t maxNumberOfNonZeroValuesPerSparseInputSample)
+{
+    std::vector<ElementType> inputData(vocabSize * sequenceLength, 0);
+    for (size_t j = 0; j < sequenceLength; ++j)
+    {
+        size_t numActualValuesWritten = 0;
+        for (size_t k = 0; k < vocabSize; ++k)
+        {
+            if ((numActualValuesWritten < maxNumberOfNonZeroValuesPerSparseInputSample) && ((rand() % vocabSize) < maxNumberOfNonZeroValuesPerSparseInputSample))
+            {
+                numActualValuesWritten++;
+                inputData[(j * vocabSize) + k] = ((ElementType)rand()) / RAND_MAX;
+            }
+        }
+    }
+
+    NDShape inputDataShape = NDShape({ vocabSize, sequenceLength });
+    NDArrayViewPtr inputValueData = MakeSharedObject<NDArrayView>(inputDataShape, inputData);
+    NDArrayViewPtr sparseData = MakeSharedObject<NDArrayView>(AsDataType<ElementType>(), StorageFormat::SparseCSC, inputDataShape, DeviceDescriptor::CPUDevice());
+    sparseData->CopyFrom(*inputValueData);
+    return{ inputValueData->DeepClone(), sparseData };
+}
+
 #pragma warning(pop)
 
 inline CNTK::NDShape CreateShape(size_t numAxes, size_t maxDimSize)
